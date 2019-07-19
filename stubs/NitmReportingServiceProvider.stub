@@ -1,0 +1,44 @@
+<?php
+
+namespace App\Providers;
+
+use Nitm\Reporting\NitmReporting;
+use Illuminate\Support\Facades\Gate;
+use Nitm\Reporting\NitmReportingApplicationServiceProvider;
+
+class NitmReportingServiceProvider extends NitmReportingApplicationServiceProvider
+{
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        // NitmReporting::night();
+
+        NitmReporting::filter(function () {
+            if ($this->app->isLocal()) {
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    /**
+     * Register the Nitm Reporting gate.
+     *
+     * This gate determines who can access Nitm Reporting in non-local environments.
+     *
+     * @return void
+     */
+    protected function gate()
+    {
+        Gate::define('viewNitmReporting', function ($user) {
+            return in_array($user->email, [
+                //
+            ]);
+        });
+    }
+}
