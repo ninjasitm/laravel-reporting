@@ -18,18 +18,18 @@ class NitmReportingServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Route::middlewareGroup('nitm-reporting', config('nitm-reporting.middleware', []));
+        // Route::middlewareGroup('nitm-reporting', config('nitm-reporting.middleware', []));
 
-        $this->registerRoutes();
-        $this->registerMigrations();
-        $this->registerPublishing();
+        // $this->registerRoutes();
+        // $this->registerMigrations();
+        // $this->registerPublishing();
 
-        NitmReporting::start($this->app);
-        NitmReporting::listenForStorageOpportunities($this->app);
+        // NitmReporting::start($this->app);
+        // NitmReporting::listenForStorageOpportunities($this->app);
 
-        $this->loadViewsFrom(
-            __DIR__.'/../resources/views', 'nitm-reporting'
-        );
+        // $this->loadViewsFrom(
+        //     __DIR__.'/../resources/views', 'nitm-reporting'
+        // );
     }
 
     /**
