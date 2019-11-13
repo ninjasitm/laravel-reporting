@@ -1,6 +1,6 @@
 <?php
 
-namespace Laravel\Telescope\Contracts;
+namespace Nitm\Reporting\Contracts;
 
 use DateTimeInterface;
 
