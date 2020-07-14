@@ -1,82 +1,84 @@
 <script type="text/ecmascript-6">
-    import $ from 'jquery';
-    import axios from 'axios';
+import $ from "jquery";
+import axios from "axios";
 
-    export default {
-        /**
-         * The component's data.
-         */
-        data() {
-            return {
-                tags: [],
-                ready: false,
-                newTag: ''
-            };
-        },
+export default {
+  /**
+   * The component's data.
+   */
+  data() {
+    return {
+      tags: [],
+      ready: false,
+      newTag: ""
+    };
+  },
 
-        /**
-         * Prepare the component.
-         */
-        mounted(){
-            document.title = "Monitoring - Telescope";
+  /**
+   * Prepare the component.
+   */
+  mounted() {
+    document.title = "Monitoring - Reporting ";
 
+    axios
+      .get(Reporting.basePath + "/nitm-reporting-api/monitored-tags")
+      .then(response => {
+        this.tags = response.data.tags;
 
-            axios.get(Telescope.basePath + '/telescope-api/monitored-tags').then(response => {
-                this.tags = response.data.tags;
+        this.ready = true;
+      });
+  },
 
-                this.ready = true;
-            })
-        },
+  methods: {
+    removeTag(tag) {
+      this.alertConfirm("Are you sure you want to remove this tag?", () => {
+        this.tags = _.reject(this.tags, t => t === tag);
 
+        axios.post(
+          Reporting.basePath + "/nitm-reporting-api/monitored-tags/delete",
+          { tag: tag }
+        );
+      });
+    },
 
-        methods: {
-            removeTag(tag){
-                this.alertConfirm('Are you sure you want to remove this tag?', ()=> {
-                    this.tags = _.reject(this.tags, t => t === tag);
+    /**
+     * Opens the modal for adding new monitored tag.
+     */
+    openNewTagModal() {
+      $("#addTagModel").modal({
+        backdrop: "static"
+      });
 
-                    axios.post(Telescope.basePath + '/telescope-api/monitored-tags/delete', {tag: tag});
-                });
-            },
+      $("#newTagInput").focus();
+    },
 
+    /**
+     * Monitor the given tag.
+     */
+    monitorNewTag() {
+      if (this.newTag.length) {
+        axios.post(Reporting.basePath + "/nitm-reporting-api/monitored-tags", {
+          tag: this.newTag
+        });
 
-            /**
-             * Opens the modal for adding new monitored tag.
-             */
-            openNewTagModal(){
-                $('#addTagModel').modal({
-                    backdrop: 'static',
-                });
+        this.tags.push(this.newTag);
+      }
 
-                $('#newTagInput').focus();
-            },
+      $("#addTagModel").modal("hide");
 
+      this.newTag = "";
+    },
 
-            /**
-             * Monitor the given tag.
-             */
-            monitorNewTag(){
-                if (this.newTag.length) {
-                    axios.post(Telescope.basePath + '/telescope-api/monitored-tags', {tag: this.newTag});
+    /**
+     * Cancel adding a new tag.
+     */
+    cancelNewTag() {
+      $("#addTagModel").modal("hide");
 
-                    this.tags.push(this.newTag);
-                }
-
-                $('#addTagModel').modal('hide');
-
-                this.newTag = '';
-            },
-
-
-            /**
-             * Cancel adding a new tag.
-             */
-            cancelNewTag(){
-                $('#addTagModel').modal('hide');
-
-                this.newTag = '';
-            }
-        }
+      this.newTag = "";
     }
+  }
+};
 </script>
 
 <template>

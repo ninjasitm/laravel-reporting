@@ -1,55 +1,53 @@
 <script type="text/ecmascript-6">
-    import axios from 'axios';
+import axios from "axios";
 
-    export default {
-        /**
-         * The component's data.
-         */
-        data() {
-            return {
-                entries: [],
-                ready: false,
-                newEntriesTimeout: null,
-                newEntriesTimeoutInSeconds: 2000,
-                recordingStatus: 'enabled'
-            };
-        },
+export default {
+  /**
+   * The component's data.
+   */
+  data() {
+    return {
+      entries: [],
+      ready: false,
+      newEntriesTimeout: null,
+      newEntriesTimeoutInSeconds: 2000,
+      recordingStatus: "enabled"
+    };
+  },
 
+  /**
+   * Prepare the component.
+   */
+  mounted() {
+    document.title = "Dumps - Reporting ";
 
-        /**
-         * Prepare the component.
-         */
-        mounted() {
-            document.title = "Dumps - Telescope";
+    this.loadEntries();
+  },
 
+  /**
+   * Clean after the component is destroyed.
+   */
+  destroyed() {
+    clearTimeout(this.newEntriesTimeout);
+  },
+
+  methods: {
+    loadEntries() {
+      axios
+        .post(Reporting.basePath + "/nitm-reporting-api/dumps")
+        .then(response => {
+          this.entries = response.data.entries;
+          this.recordingStatus = response.data.status;
+
+          this.ready = true;
+
+          this.newEntriesTimeout = setTimeout(() => {
             this.loadEntries();
-
-        },
-
-
-        /**
-         * Clean after the component is destroyed.
-         */
-        destroyed() {
-            clearTimeout(this.newEntriesTimeout);
-        },
-
-
-        methods: {
-            loadEntries(){
-                axios.post(Telescope.basePath + '/telescope-api/dumps').then(response => {
-                    this.entries = response.data.entries;
-                    this.recordingStatus = response.data.status;
-
-                    this.ready = true;
-
-                    this.newEntriesTimeout = setTimeout(() => {
-                        this.loadEntries();
-                    }, this.newEntriesTimeoutInSeconds);
-                });
-            }
-        }
+          }, this.newEntriesTimeoutInSeconds);
+        });
     }
+  }
+};
 </script>
 
 <template>
@@ -62,8 +60,8 @@
             <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20px" height="20px" viewBox="0 0 90 90">
                 <path fill="#FFFFFF" d="M45 0C20.1 0 0 20.1 0 45s20.1 45 45 45 45-20.1 45-45S69.9 0 45 0zM45 74.5c-3.6 0-6.5-2.9-6.5-6.5s2.9-6.5 6.5-6.5 6.5 2.9 6.5 6.5S48.6 74.5 45 74.5zM52.1 23.9l-2.5 29.6c0 2.5-2.1 4.6-4.6 4.6 -2.5 0-4.6-2.1-4.6-4.6l-2.5-29.6c-0.1-0.4-0.1-0.7-0.1-1.1 0-4 3.2-7.2 7.2-7.2 4 0 7.2 3.2 7.2 7.2C52.2 23.1 52.2 23.5 52.1 23.9z"></path>
             </svg>
-            <span class="ml-1" v-if="recordingStatus == 'disabled'">Telescope is currently disabled.</span>
-            <span class="ml-1" v-if="recordingStatus == 'paused'">Telescope recording is paused.</span>
+            <span class="ml-1" v-if="recordingStatus == 'disabled'">Reporting  is currently disabled.</span>
+            <span class="ml-1" v-if="recordingStatus == 'paused'">Reporting  recording is paused.</span>
             <span class="ml-1" v-if="recordingStatus == 'off'">This watcher is turned off.</span>
         </p>
 
@@ -109,23 +107,24 @@
 </template>
 
 <style>
-    pre.sf-dump, pre.sf-dump .sf-dump-default {
-        background: none !important;
-    }
+pre.sf-dump,
+pre.sf-dump .sf-dump-default {
+  background: none !important;
+}
 
-    pre.sf-dump {
-        padding-left: 0 !important;
-    }
+pre.sf-dump {
+  padding-left: 0 !important;
+}
 
-    .entryPointDescription {
-        background: black;
-        padding-left: 5px;
-        padding-right: 5px;
-    }
+.entryPointDescription {
+  background: black;
+  padding-left: 5px;
+  padding-right: 5px;
+}
 
-    .entryPointDescription a {
-        font: 12px Menlo, Monaco, Consolas, monospace;
-        color: white;
-        text-decoration: underline;
-    }
+.entryPointDescription a {
+  font: 12px Menlo, Monaco, Consolas, monospace;
+  color: white;
+  text-decoration: underline;
+}
 </style>

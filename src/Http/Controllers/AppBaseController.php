@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace Nitm\Reporting\Http\Controllers;
 
 use Validator;
 use Illuminate\Http\Request;
@@ -39,7 +39,7 @@ class AppBaseController extends Controller
      * @return void
      */
 
-    public function index(Request $request, $options=[])
+    public function index(Request $request, $options = [])
     {
         // GET THE SLUG, ex. 'posts', 'pages', etc.
         $slug = $this->getSlug($request);
@@ -81,7 +81,7 @@ class AppBaseController extends Controller
         if (strlen($dataType->model_name) != 0) {
             $model = app($dataType->model_name);
 
-            if ($dataType->scope && $dataType->scope != '' && method_exists($model, 'scope'.ucfirst($dataType->scope))) {
+            if ($dataType->scope && $dataType->scope != '' && method_exists($model, 'scope' . ucfirst($dataType->scope))) {
                 $query = $model->{$dataType->scope}();
             } else {
                 $query = $model::select('*');
@@ -102,7 +102,7 @@ class AppBaseController extends Controller
 
             if ($search->value != '' && $search->key && $search->filter) {
                 $search_filter = ($search->filter == 'equals') ? '=' : 'LIKE';
-                $search_value = ($search->filter == 'equals') ? $search->value : '%'.$search->value.'%';
+                $search_value = ($search->filter == 'equals') ? $search->value : '%' . $search->value . '%';
                 $query->where($search->key, $search_filter, $search_value);
             }
 
@@ -133,7 +133,7 @@ class AppBaseController extends Controller
         // Check if a default search key is set
         $defaultSearchKey = $dataType->default_search_key ?? null;
 
-        $view = array_get($options, 'view', $this->getViewSlug($this->slug ?: $slug).'.index');
+        $view = array_get($options, 'view', $this->getViewSlug($this->slug ?: $slug) . '.index');
 
         return Voyager::view($view, array_merge([
             'models' => $this->repository->orderBy($orderBy, $sortOrder)->$getter(),
@@ -160,7 +160,7 @@ class AppBaseController extends Controller
      * @return void
      */
 
-    public function show(Request $request, $id, $options=[])
+    public function show(Request $request, $id, $options = [])
     {
         $slug = $this->getSlug($request);
 
@@ -177,7 +177,7 @@ class AppBaseController extends Controller
             if ($model && in_array(SoftDeletes::class, class_uses($model))) {
                 $model = $model->withTrashed();
             }
-            if ($dataType->scope && $dataType->scope != '' && method_exists($model, 'scope'.ucfirst($dataType->scope))) {
+            if ($dataType->scope && $dataType->scope != '' && method_exists($model, 'scope' . ucfirst($dataType->scope))) {
                 $model = $model->{$dataType->scope}();
             }
             $dataTypeContent = call_user_func([$model, 'findOrFail'], $id);
@@ -198,12 +198,14 @@ class AppBaseController extends Controller
         // Check if BREAD is Translatable
         // $isModelTranslatable = is_bread_translatable($dataTypeContent);
 
-        $view = array_get($options, 'view', $this->getViewSlug($this->slug ?: $slug).'.show');
+        $view = array_get($options, 'view', $this->getViewSlug($this->slug ?: $slug) . '.show');
 
         return Voyager::view($view, array_merge([
             'model' => $dataTypeContent
         ], $options, compact(
-            'dataType', 'dataTypeContent', 'isModelTranslatable'
+            'dataType',
+            'dataTypeContent',
+            'isModelTranslatable'
         )));
     }
 
@@ -214,7 +216,7 @@ class AppBaseController extends Controller
      * @return void
      */
 
-    public function edit(Request $request, $id, $options=[])
+    public function edit(Request $request, $id, $options = [])
     {
         $slug = $this->getSlug($request);
 
@@ -248,12 +250,14 @@ class AppBaseController extends Controller
         // Check if BREAD is Translatable
         $isModelTranslatable = is_bread_translatable($dataTypeContent);
 
-        $view = array_get($options, 'view', $this->getViewSlug($this->slug ?: $slug).'.edit');
+        $view = array_get($options, 'view', $this->getViewSlug($this->slug ?: $slug) . '.edit');
 
         return Voyager::view($view, array_merge([
             'model' => $dataTypeContent
         ], $options, compact(
-            'dataType', 'dataTypeContent', 'isModelTranslatable'
+            'dataType',
+            'dataTypeContent',
+            'isModelTranslatable'
         )));
     }
 
@@ -264,7 +268,7 @@ class AppBaseController extends Controller
      * @param [type] $id
      * @return void
      */
-    public function update(Request $request, $id, $options=[])
+    public function update(Request $request, $id, $options = [])
     {
         $slug = $this->getSlug($request);
 
@@ -275,7 +279,7 @@ class AppBaseController extends Controller
         $id = $id instanceof Model ? $id->{$id->getKeyName()} : $id;
 
         $model = app($dataType->model_name);
-        if ($dataType->scope && $dataType->scope != '' && method_exists($model, 'scope'.ucfirst($dataType->scope))) {
+        if ($dataType->scope && $dataType->scope != '' && method_exists($model, 'scope' . ucfirst($dataType->scope))) {
             $model = $model->{$dataType->scope}();
         }
         if ($model && in_array(SoftDeletes::class, class_uses($model))) {
@@ -301,18 +305,18 @@ class AppBaseController extends Controller
         if (!$request->ajax()) {
 
             // event(new BreadDataUpdated($dataType, $data));
-            $view = array_get($options, 'view', $this->getViewSlug($this->slug ?: $slug).'.edit');
+            $view = array_get($options, 'view', $this->getViewSlug($this->slug ?: $slug) . '.edit');
 
             return redirect()
-                ->route('voyager.'.$view, ['id' => $id])
+                ->route('voyager.' . $view, ['id' => $id])
                 ->with([
-                    'message'    => __('voyager::voyager.generic.successfully_updated')." {$dataType->display_name_singular}",
+                    'message'    => __('voyager::voyager.generic.successfully_updated') . " {$dataType->display_name_singular}",
                     'alert-type' => 'success',
                 ]);
         } else {
             return response()->json([
                 'id' => $id,
-                'success' => __('voyager::voyager.generic.successfully_updated')." {$dataType->display_name_singular}"
+                'success' => __('voyager::voyager.generic.successfully_updated') . " {$dataType->display_name_singular}"
             ]);
         }
     }
@@ -323,7 +327,7 @@ class AppBaseController extends Controller
      * @param Request $request
      * @return void
      */
-    public function create(Request $request, $options=[])
+    public function create(Request $request, $options = [])
     {
         $slug = $this->getSlug($request);
 
@@ -334,8 +338,8 @@ class AppBaseController extends Controller
         $this->authorize('add', app($dataType->model_name));
 
         $dataTypeContent = (strlen($dataType->model_name) != 0)
-                            ? new $dataType->model_name()
-                            : false;
+            ? new $dataType->model_name()
+            : false;
 
         foreach ($dataType->addRows as $key => $row) {
             $details = json_decode($row->details);
@@ -348,12 +352,14 @@ class AppBaseController extends Controller
         // Check if BREAD is Translatable
         $isModelTranslatable = is_bread_translatable($dataTypeContent);
 
-        $view = array_get($options, 'view', $this->getViewSlug($this->slug ?: $slug).'.create');
+        $view = array_get($options, 'view', $this->getViewSlug($this->slug ?: $slug) . '.create');
 
         return Voyager::view($view, array_merge([
             'model' => $dataTypeContent
         ], $options, compact(
-            'dataType', 'dataTypeContent', 'isModelTranslatable'
+            'dataType',
+            'dataTypeContent',
+            'isModelTranslatable'
         )));
     }
 
@@ -363,7 +369,7 @@ class AppBaseController extends Controller
      * @param Request $request
      * @return void
      */
-    public function store(Request $request, $options=[])
+    public function store(Request $request, $options = [])
     {
         $slug = $this->getSlug($request);
 
@@ -390,20 +396,20 @@ class AppBaseController extends Controller
         if (!$request->ajax()) {
 
             // event(new BreadDataAdded($dataType, $data));
-            $view = array_get($options, 'view', $this->getViewSlug($this->slug ?: $slug).'.index');
+            $view = array_get($options, 'view', $this->getViewSlug($this->slug ?: $slug) . '.index');
 
             //Need to determine if rerouting to new data is best
             return redirect()
-                ->route('voyager.'.$view)
+                ->route('voyager.' . $view)
                 ->with([
-                    'message'    => __('voyager::voyager.generic.successfully_added_new')." {$dataType->display_name_singular}",
+                    'message'    => __('voyager::voyager.generic.successfully_added_new') . " {$dataType->display_name_singular}",
                     'alert-type' => 'success',
                 ]);
         } else {
             return response()->json([
                 'id' => $model->id,
-                'success' => __('voyager::voyager.generic.successfully_added_new')." {$dataType->display_name_singular}",
-                'html' => view($slug.'.dynamic', ['model' => $model])->render()
+                'success' => __('voyager::voyager.generic.successfully_added_new') . " {$dataType->display_name_singular}",
+                'html' => view($slug . '.dynamic', ['model' => $model])->render()
             ]);
         }
     }
@@ -415,7 +421,7 @@ class AppBaseController extends Controller
      * @param [type] $id
      * @return void
      */
-    public function destroy(Request $request, $id, $options=[])
+    public function destroy(Request $request, $id, $options = [])
     {
         $slug = $this->getSlug($request);
 
@@ -444,16 +450,16 @@ class AppBaseController extends Controller
         $res = $data->destroy($ids);
         $data = $res
             ? [
-                'message'    => __('voyager::voyager.generic.successfully_deleted')." {$displayName}",
+                'message'    => __('voyager::voyager.generic.successfully_deleted') . " {$displayName}",
                 'alert-type' => 'success',
             ]
             : [
-                'message'    => __('voyager::voyager.generic.error_deleting')." {$displayName}",
+                'message'    => __('voyager::voyager.generic.error_deleting') . " {$displayName}",
                 'alert-type' => 'error',
             ];
 
         // if ($res) {
-            // event(new BreadDataDeleted($dataType, $data));
+        // event(new BreadDataDeleted($dataType, $data));
         // }
 
         if ($request->ajax()) {
@@ -463,7 +469,7 @@ class AppBaseController extends Controller
             ]);
         }
 
-        $view = array_get($options, 'view', $this->getViewSlug($this->slug ?: $slug).'.index');
+        $view = array_get($options, 'view', $this->getViewSlug($this->slug ?: $slug) . '.index');
 
         return redirect()->route($view)->with($data);
     }

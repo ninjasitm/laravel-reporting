@@ -9,7 +9,7 @@ use Nitm\Reporting\Contracts\PrunableRepository;
 use Nitm\Reporting\Contracts\ClearableRepository;
 use Nitm\Reporting\Storage\DatabaseEntriesRepository;
 
-class NitmReportingServiceProvider extends ServiceProvider
+class ReportingServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap any package services.
@@ -40,10 +40,10 @@ class NitmReportingServiceProvider extends ServiceProvider
     private function registerRoutes()
     {
         Route::group($this->routeConfiguration(), function () {
-            $this->loadRoutesFrom(__DIR__.'/Http/routes.php');
+            $this->loadRoutesFrom(__DIR__ . '/Http/routes.php');
         });
         Route::group($this->apiRouteConfiguration(), function () {
-            $this->loadRoutesFrom(__DIR__.'/Http/api-routes.php');
+            $this->loadRoutesFrom(__DIR__ . '/Http/api-routes.php');
         });
     }
 
@@ -80,7 +80,7 @@ class NitmReportingServiceProvider extends ServiceProvider
     private function registerMigrations()
     {
         if ($this->app->runningInConsole() && $this->shouldMigrate()) {
-            $this->loadMigrationsFrom(__DIR__.'/Storage/migrations');
+            $this->loadMigrationsFrom(__DIR__ . '/Storage/migrations');
         }
     }
 
@@ -93,20 +93,20 @@ class NitmReportingServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/Storage/migrations' => database_path('migrations'),
+                __DIR__ . '/Storage/migrations' => database_path('migrations'),
             ], 'nitm-reporting-migrations');
 
             $this->publishes([
-                __DIR__.'/../public' => public_path('vendor/nitm-reporting'),
+                __DIR__ . '/../public' => public_path('vendor/nitm-reporting'),
             ], 'nitm-reporting-assets');
 
             $this->publishes([
-                __DIR__.'/../config/nitm-reporting.php' => config_path('nitm-reporting.php'),
+                __DIR__ . '/../config/nitm-reporting.php' => config_path('nitm-reporting.php'),
             ], 'nitm-reporting-config');
 
             $this->publishes([
-                __DIR__.'/../stubs/NitmReportingServiceProvider.stub' => app_path('Providers/NitmReportingServiceProvider.php'),
-                __DIR__.'/../stubs/ReportingController.stub' => app_path('Http/Controllers/Api/ReportingController.php'),
+                __DIR__ . '/../stubs/NitmReportingServiceProvider.stub' => app_path('Providers/NitmReportingServiceProvider.php'),
+                __DIR__ . '/../stubs/ReportingController.stub' => app_path('Http/Controllers/Api/ReportingController.php'),
             ], 'nitm-reporting-provider');
         }
     }
@@ -119,7 +119,8 @@ class NitmReportingServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(
-            __DIR__.'/../config/nitm-reporting.php', 'nitm-reporting'
+            __DIR__ . '/../config/nitm-reporting.php',
+            'nitm-reporting'
         );
 
         $this->registerStorageDriver();
@@ -140,7 +141,7 @@ class NitmReportingServiceProvider extends ServiceProvider
     {
         $driver = config('nitm-reporting.driver');
 
-        if (method_exists($this, $method = 'register'.ucfirst($driver).'Driver')) {
+        if (method_exists($this, $method = 'register' . ucfirst($driver) . 'Driver')) {
             $this->$method();
         }
     }
@@ -153,15 +154,18 @@ class NitmReportingServiceProvider extends ServiceProvider
     protected function registerDatabaseDriver()
     {
         $this->app->singleton(
-            EntriesRepository::class, DatabaseEntriesRepository::class
+            EntriesRepository::class,
+            DatabaseEntriesRepository::class
         );
 
         $this->app->singleton(
-            ClearableRepository::class, DatabaseEntriesRepository::class
+            ClearableRepository::class,
+            DatabaseEntriesRepository::class
         );
 
         $this->app->singleton(
-            PrunableRepository::class, DatabaseEntriesRepository::class
+            PrunableRepository::class,
+            DatabaseEntriesRepository::class
         );
 
         $this->app->when(DatabaseEntriesRepository::class)

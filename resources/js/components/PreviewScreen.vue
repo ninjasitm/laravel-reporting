@@ -1,138 +1,141 @@
 <script type="text/ecmascript-6">
-    import _ from 'lodash';
-    import axios from 'axios';
+import _ from "lodash";
+import axios from "axios";
 
+export default {
+  props: {
+    resource: { required: true },
+    title: { required: true },
+    id: { required: true },
+    entryPoint: { default: false }
+  },
 
-    export default {
-        props: {
-            resource: {required: true},
-            title: {required: true},
-            id: {required: true},
-            entryPoint: {default: false},
-        },
+  /**
+   * The component's data.
+   */
+  data() {
+    return {
+      entry: null,
+      batch: null,
+      ready: false,
 
+      updateEntryTimeout: null,
+      updateEntryTimer: 2500
+    };
+  },
 
-        /**
-         * The component's data.
-         */
-        data() {
-            return {
-                entry: null,
-                batch: null,
-                ready: false,
-
-                updateEntryTimeout: null,
-                updateEntryTimer: 2500,
-            };
-        },
-
-
-        watch: {
-            id() {
-                this.prepareEntry()
-            }
-        },
-
-
-        /**
-         * Prepare the component.
-         */
-        mounted() {
-            this.prepareEntry()
-        },
-
-
-        /**
-         * Clean after the component is destroyed.
-         */
-        destroyed() {
-            clearTimeout(this.updateEntryTimeout);
-        },
-
-
-        computed: {
-            job() {
-                return _.find(this.batch, {type: 'job'})
-            },
-
-            request() {
-                return _.find(this.batch, {type: 'request'})
-            },
-
-
-            command() {
-                return _.find(this.batch, {type: 'command'})
-            },
-
-            gravatarUrl() {
-                if (this.entry.content.user.email) {
-                    const md5 = require('md5')
-                    return 'https://www.gravatar.com/avatar/' + md5(this.entry.content.user.email) + '?s=200'
-                }
-            }
-        },
-
-
-        methods: {
-            prepareEntry() {
-                document.title = this.title + " - Telescope";
-                this.ready = false;
-
-                let unwatch = this.$watch('ready', newVal => {
-                    if (newVal) {
-                        this.$emit('ready');
-                        unwatch();
-                    }
-                });
-
-                this.loadEntry((response) => {
-                    this.entry = response.data.entry;
-                    this.batch = response.data.batch;
-
-                    this.$parent.entry = response.data.entry;
-                    this.$parent.batch = response.data.batch;
-
-                    this.ready = true;
-
-                    this.updateEntry();
-                });
-            },
-
-
-            loadEntry(after){
-                axios.get(Telescope.basePath + '/telescope-api/' + this.resource + '/' + this.id).then(response => {
-                    if (_.isFunction(after)) {
-                        after(response);
-                    }
-                }).catch(error => {
-                    this.ready = true;
-                })
-            },
-
-
-            /**
-             * Update the existing entry if needed.
-             */
-            updateEntry(){
-                if (this.resource != 'jobs') return;
-                if (this.entry.content.status !== 'pending') return;
-
-                this.updateEntryTimeout = setTimeout(() => {
-                    this.loadEntry((response) => {
-                        this.entry = response.data.entry;
-                        this.batch = response.data.batch;
-
-                        this.$parent.entry = response.data.entry;
-                        this.$parent.batch = response.data.batch;
-
-                        this.ready = true;
-                    });
-
-                    this.updateEntry();
-                }, this.updateEntryTimer);
-            }
-        }
+  watch: {
+    id() {
+      this.prepareEntry();
     }
+  },
+
+  /**
+   * Prepare the component.
+   */
+  mounted() {
+    this.prepareEntry();
+  },
+
+  /**
+   * Clean after the component is destroyed.
+   */
+  destroyed() {
+    clearTimeout(this.updateEntryTimeout);
+  },
+
+  computed: {
+    job() {
+      return _.find(this.batch, { type: "job" });
+    },
+
+    request() {
+      return _.find(this.batch, { type: "request" });
+    },
+
+    command() {
+      return _.find(this.batch, { type: "command" });
+    },
+
+    gravatarUrl() {
+      if (this.entry.content.user.email) {
+        const md5 = require("md5");
+        return (
+          "https://www.gravatar.com/avatar/" +
+          md5(this.entry.content.user.email) +
+          "?s=200"
+        );
+      }
+    }
+  },
+
+  methods: {
+    prepareEntry() {
+      document.title = this.title + " - Reporting ";
+      this.ready = false;
+
+      let unwatch = this.$watch("ready", newVal => {
+        if (newVal) {
+          this.$emit("ready");
+          unwatch();
+        }
+      });
+
+      this.loadEntry(response => {
+        this.entry = response.data.entry;
+        this.batch = response.data.batch;
+
+        this.$parent.entry = response.data.entry;
+        this.$parent.batch = response.data.batch;
+
+        this.ready = true;
+
+        this.updateEntry();
+      });
+    },
+
+    loadEntry(after) {
+      axios
+        .get(
+          Reporting.basePath +
+            "/nitm-reporting-api/" +
+            this.resource +
+            "/" +
+            this.id
+        )
+        .then(response => {
+          if (_.isFunction(after)) {
+            after(response);
+          }
+        })
+        .catch(error => {
+          this.ready = true;
+        });
+    },
+
+    /**
+     * Update the existing entry if needed.
+     */
+    updateEntry() {
+      if (this.resource != "jobs") return;
+      if (this.entry.content.status !== "pending") return;
+
+      this.updateEntryTimeout = setTimeout(() => {
+        this.loadEntry(response => {
+          this.entry = response.data.entry;
+          this.batch = response.data.batch;
+
+          this.$parent.entry = response.data.entry;
+          this.$parent.batch = response.data.batch;
+
+          this.ready = true;
+        });
+
+        this.updateEntry();
+      }, this.updateEntryTimer);
+    }
+  }
+};
 </script>
 
 <template>

@@ -1,267 +1,287 @@
 <script type="text/ecmascript-6">
-    import $ from 'jquery';
-    import _ from 'lodash';
-    import axios from 'axios';
+import $ from "jquery";
+import _ from "lodash";
+import axios from "axios";
 
-    export default {
-        props: [
-            'resource', 'title'
-        ],
+export default {
+  props: ["resource", "title"],
 
+  /**
+   * The component's data.
+   */
+  data() {
+    return {
+      tag: "",
+      familyHash: "",
+      entries: [],
+      ready: false,
+      recordingStatus: "enabled",
+      lastEntryIndex: "",
+      hasMoreEntries: true,
+      hasNewEntries: false,
+      entriesPerRequest: 50,
+      loadingNewEntries: false,
+      loadingMoreEntries: false,
 
-        /**
-         * The component's data.
-         */
-        data() {
-            return {
-                tag: '',
-                familyHash: '',
-                entries: [],
-                ready: false,
-                recordingStatus: 'enabled',
-                lastEntryIndex: '',
-                hasMoreEntries: true,
-                hasNewEntries: false,
-                entriesPerRequest: 50,
-                loadingNewEntries: false,
-                loadingMoreEntries: false,
+      updateTimeAgoTimeout: null,
 
-                updateTimeAgoTimeout: null,
+      newEntriesTimeout: null,
+      newEntriesTimer: 2500,
 
-                newEntriesTimeout: null,
-                newEntriesTimer: 2500,
+      updateEntriesTimeout: null,
+      updateEntriesTimer: 2500
+    };
+  },
 
-                updateEntriesTimeout: null,
-                updateEntriesTimer: 2500,
-            };
-        },
+  /**
+   * Prepare the component.
+   */
+  mounted() {
+    document.title = this.title + " - Reporting ";
 
+    this.familyHash = this.$route.query.family_hash || "";
 
-        /**
-         * Prepare the component.
-         */
-        mounted() {
-            document.title = this.title + " - Telescope";
+    this.tag = this.$route.query.tag || "";
 
-            this.familyHash = this.$route.query.family_hash || '';
+    this.loadEntries(entries => {
+      this.entries = entries;
 
-            this.tag = this.$route.query.tag || '';
+      this.checkForNewEntries();
 
-            this.loadEntries((entries) => {
-                this.entries = entries;
+      this.ready = true;
+    });
 
-                this.checkForNewEntries();
+    this.updateEntries();
 
-                this.ready = true;
-            });
+    this.updateTimeAgo();
 
-            this.updateEntries();
+    this.focusOnSearch();
+  },
 
-            this.updateTimeAgo();
+  /**
+   * Clean after the component is destroyed.
+   */
+  destroyed() {
+    clearTimeout(this.newEntriesTimeout);
+    clearTimeout(this.updateEntriesTimeout);
+    clearTimeout(this.updateTimeAgoTimeout);
 
-            this.focusOnSearch();
-        },
+    document.onkeyup = null;
+  },
 
+  watch: {
+    "$route.query": function() {
+      clearTimeout(this.newEntriesTimeout);
 
-        /**
-         * Clean after the component is destroyed.
-         */
-        destroyed() {
-            clearTimeout(this.newEntriesTimeout);
-            clearTimeout(this.updateEntriesTimeout);
-            clearTimeout(this.updateTimeAgoTimeout);
+      this.hasNewEntries = false;
+      this.lastEntryIndex = "";
 
-            document.onkeyup = null;
-        },
+      if (!this.$route.query.family_hash) {
+        this.familyHash = "";
+      }
 
+      if (!this.$route.query.tag) {
+        this.tag = "";
+      }
 
-        watch: {
-            '$route.query': function () {
-                clearTimeout(this.newEntriesTimeout);
+      this.ready = false;
 
-                this.hasNewEntries = false;
-                this.lastEntryIndex = '';
+      this.loadEntries(entries => {
+        this.entries = entries;
 
-                if (!this.$route.query.family_hash) {
-                    this.familyHash = '';
-                }
+        this.checkForNewEntries();
 
-                if (!this.$route.query.tag) {
-                    this.tag = '';
-                }
-
-                this.ready = false;
-
-                this.loadEntries((entries) => {
-                    this.entries = entries;
-
-                    this.checkForNewEntries();
-
-                    this.ready = true;
-                });
-            },
-        },
-
-
-        methods: {
-            loadEntries(after){
-                axios.post(Telescope.basePath + '/telescope-api/' + this.resource +
-                        '?tag=' + this.tag +
-                        '&before=' + this.lastEntryIndex +
-                        '&take=' + this.entriesPerRequest +
-                        '&family_hash=' + this.familyHash
-                ).then(response => {
-                    this.lastEntryIndex = response.data.entries.length ? _.last(response.data.entries).sequence : this.lastEntryIndex;
-
-                    this.hasMoreEntries = response.data.entries.length >= this.entriesPerRequest;
-
-                    this.recordingStatus = response.data.status;
-
-                    if (_.isFunction(after)) {
-                        after(
-                                this.familyHash ? response.data.entries : _.uniqBy(response.data.entries, entry => entry.family_hash || _.uniqueId())
-                        );
-                    }
-                })
-            },
-
-
-            /**
-             * Keep checking if there are new entries.
-             */
-            checkForNewEntries(){
-                this.newEntriesTimeout = setTimeout(() => {
-                    axios.post(Telescope.basePath + '/telescope-api/' + this.resource +
-                            '?tag=' + this.tag +
-                            '&take=1' +
-                            '&family_hash=' + this.familyHash
-                    ).then(response => {
-                        this.recordingStatus = response.data.status;
-
-                        if (response.data.entries.length && !this.entries.length) {
-                            this.loadNewEntries();
-                        } else if (response.data.entries.length && _.first(response.data.entries).id !== _.first(this.entries).id) {
-                            if (this.$root.autoLoadsNewEntries) {
-                                this.loadNewEntries();
-                            } else {
-                                this.hasNewEntries = true;
-                            }
-                        } else {
-                            this.checkForNewEntries();
-                        }
-                    })
-                }, this.newEntriesTimer);
-            },
-
-
-            /**
-             * Update the timeago of each entry.
-             */
-            updateTimeAgo(){
-                this.updateTimeAgoTimeout = setTimeout(() => {
-                    _.each($('[data-timeago]'), time => {
-                        $(time).html(this.timeAgo($(time).data('timeago')));
-                    });
-
-                    this.updateTimeAgo();
-                }, 60000)
-            },
-
-
-            /**
-             * Search the entries of this type.
-             */
-            search(){
-                this.debouncer(() => {
-                    this.hasNewEntries = false;
-                    this.lastEntryIndex = '';
-
-                    clearTimeout(this.newEntriesTimeout);
-
-                    this.$router.push({query: _.assign({}, this.$route.query, {tag: this.tag})});
-                });
-            },
-
-
-            /**
-             * Load more entries.
-             */
-            loadOlderEntries(){
-                this.loadingMoreEntries = true;
-
-                this.loadEntries((entries) => {
-                    this.entries.push(...entries);
-
-                    this.loadingMoreEntries = false;
-                });
-            },
-
-
-            /**
-             * Load new entries.
-             */
-            loadNewEntries(){
-                this.hasMoreEntries = true;
-                this.hasNewEntries = false;
-                this.lastEntryIndex = '';
-                this.loadingNewEntries = true;
-
-                clearTimeout(this.newEntriesTimeout);
-
-                this.loadEntries((entries) => {
-                    this.entries = entries;
-
-                    this.loadingNewEntries = false;
-
-                    this.checkForNewEntries();
-                });
-            },
-
-
-            /**
-             * Update the existing entries if needed.
-             */
-            updateEntries(){
-                if (this.resource !== 'jobs') return;
-
-                this.updateEntriesTimeout = setTimeout(() => {
-                    let uuids = _.chain(this.entries).filter(entry => entry.content.status === 'pending').map('id').value();
-
-                    if (uuids.length) {
-                        axios.post(Telescope.basePath + '/telescope-api/' + this.resource, {
-                            uuids: uuids
-                        }).then(response => {
-                            this.recordingStatus = response.data.status;
-
-                            this.entries = _.map(this.entries, entry => {
-                                if (!_.includes(uuids, entry.id)) return entry;
-
-                                return _.find(response.data.entries, {id: entry.id});
-                            });
-                        })
-                    }
-
-                    this.updateEntries();
-                }, this.updateEntriesTimer);
-            },
-
-
-            /**
-             * Focus on the search input when "/" key is hit.
-             */
-            focusOnSearch(){
-                document.onkeyup = event => {
-                    if (event.which === 191 || event.keyCode === 191) {
-                        let searchInput = document.getElementById("searchInput");
-
-                        if (searchInput) {
-                            searchInput.focus();
-                        }
-                    }
-                };
-            }
-        }
+        this.ready = true;
+      });
     }
+  },
+
+  methods: {
+    loadEntries(after) {
+      axios
+        .post(
+          Reporting.basePath +
+            "/nitm-reporting-api/" +
+            this.resource +
+            "?tag=" +
+            this.tag +
+            "&before=" +
+            this.lastEntryIndex +
+            "&take=" +
+            this.entriesPerRequest +
+            "&family_hash=" +
+            this.familyHash
+        )
+        .then(response => {
+          this.lastEntryIndex = response.data.entries.length
+            ? _.last(response.data.entries).sequence
+            : this.lastEntryIndex;
+
+          this.hasMoreEntries =
+            response.data.entries.length >= this.entriesPerRequest;
+
+          this.recordingStatus = response.data.status;
+
+          if (_.isFunction(after)) {
+            after(
+              this.familyHash
+                ? response.data.entries
+                : _.uniqBy(
+                    response.data.entries,
+                    entry => entry.family_hash || _.uniqueId()
+                  )
+            );
+          }
+        });
+    },
+
+    /**
+     * Keep checking if there are new entries.
+     */
+    checkForNewEntries() {
+      this.newEntriesTimeout = setTimeout(() => {
+        axios
+          .post(
+            Reporting.basePath +
+              "/nitm-reporting-api/" +
+              this.resource +
+              "?tag=" +
+              this.tag +
+              "&take=1" +
+              "&family_hash=" +
+              this.familyHash
+          )
+          .then(response => {
+            this.recordingStatus = response.data.status;
+
+            if (response.data.entries.length && !this.entries.length) {
+              this.loadNewEntries();
+            } else if (
+              response.data.entries.length &&
+              _.first(response.data.entries).id !== _.first(this.entries).id
+            ) {
+              if (this.$root.autoLoadsNewEntries) {
+                this.loadNewEntries();
+              } else {
+                this.hasNewEntries = true;
+              }
+            } else {
+              this.checkForNewEntries();
+            }
+          });
+      }, this.newEntriesTimer);
+    },
+
+    /**
+     * Update the timeago of each entry.
+     */
+    updateTimeAgo() {
+      this.updateTimeAgoTimeout = setTimeout(() => {
+        _.each($("[data-timeago]"), time => {
+          $(time).html(this.timeAgo($(time).data("timeago")));
+        });
+
+        this.updateTimeAgo();
+      }, 60000);
+    },
+
+    /**
+     * Search the entries of this type.
+     */
+    search() {
+      this.debouncer(() => {
+        this.hasNewEntries = false;
+        this.lastEntryIndex = "";
+
+        clearTimeout(this.newEntriesTimeout);
+
+        this.$router.push({
+          query: _.assign({}, this.$route.query, { tag: this.tag })
+        });
+      });
+    },
+
+    /**
+     * Load more entries.
+     */
+    loadOlderEntries() {
+      this.loadingMoreEntries = true;
+
+      this.loadEntries(entries => {
+        this.entries.push(...entries);
+
+        this.loadingMoreEntries = false;
+      });
+    },
+
+    /**
+     * Load new entries.
+     */
+    loadNewEntries() {
+      this.hasMoreEntries = true;
+      this.hasNewEntries = false;
+      this.lastEntryIndex = "";
+      this.loadingNewEntries = true;
+
+      clearTimeout(this.newEntriesTimeout);
+
+      this.loadEntries(entries => {
+        this.entries = entries;
+
+        this.loadingNewEntries = false;
+
+        this.checkForNewEntries();
+      });
+    },
+
+    /**
+     * Update the existing entries if needed.
+     */
+    updateEntries() {
+      if (this.resource !== "jobs") return;
+
+      this.updateEntriesTimeout = setTimeout(() => {
+        let uuids = _.chain(this.entries)
+          .filter(entry => entry.content.status === "pending")
+          .map("id")
+          .value();
+
+        if (uuids.length) {
+          axios
+            .post(Reporting.basePath + "/nitm-reporting-api/" + this.resource, {
+              uuids: uuids
+            })
+            .then(response => {
+              this.recordingStatus = response.data.status;
+
+              this.entries = _.map(this.entries, entry => {
+                if (!_.includes(uuids, entry.id)) return entry;
+
+                return _.find(response.data.entries, { id: entry.id });
+              });
+            });
+        }
+
+        this.updateEntries();
+      }, this.updateEntriesTimer);
+    },
+
+    /**
+     * Focus on the search input when "/" key is hit.
+     */
+    focusOnSearch() {
+      document.onkeyup = event => {
+        if (event.which === 191 || event.keyCode === 191) {
+          let searchInput = document.getElementById("searchInput");
+
+          if (searchInput) {
+            searchInput.focus();
+          }
+        }
+      };
+    }
+  }
+};
 </script>
 
 <template>
@@ -279,8 +299,8 @@
             <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20px" height="20px" viewBox="0 0 90 90" class="mr-2">
                 <path fill="#FFFFFF" d="M45 0C20.1 0 0 20.1 0 45s20.1 45 45 45 45-20.1 45-45S69.9 0 45 0zM45 74.5c-3.6 0-6.5-2.9-6.5-6.5s2.9-6.5 6.5-6.5 6.5 2.9 6.5 6.5S48.6 74.5 45 74.5zM52.1 23.9l-2.5 29.6c0 2.5-2.1 4.6-4.6 4.6 -2.5 0-4.6-2.1-4.6-4.6l-2.5-29.6c-0.1-0.4-0.1-0.7-0.1-1.1 0-4 3.2-7.2 7.2-7.2 4 0 7.2 3.2 7.2 7.2C52.2 23.1 52.2 23.5 52.1 23.9z"></path>
             </svg>
-            <span class="ml-1" v-if="recordingStatus == 'disabled'">Telescope is currently disabled.</span>
-            <span class="ml-1" v-if="recordingStatus == 'paused'">Telescope recording is paused.</span>
+            <span class="ml-1" v-if="recordingStatus == 'disabled'">Reporting  is currently disabled.</span>
+            <span class="ml-1" v-if="recordingStatus == 'paused'">Reporting  recording is paused.</span>
             <span class="ml-1" v-if="recordingStatus == 'off'">This watcher is turned off.</span>
         </p>
 

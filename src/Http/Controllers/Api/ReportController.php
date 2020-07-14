@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace Nitm\Reporting\Http\Controllers\API;
 
 use Illuminate\Http\Request;
 use App\Reports\Report;
@@ -14,10 +14,10 @@ use App\Repositories\ReportRepository;
 use App\Validators\ReportValidator;
 
 /**
-* Class ReportsController.
-*
-* @package namespace App\Http\Controllers;
-*/
+ * Class ReportsController.
+ *
+ * @package namespace App\Http\Controllers;
+ */
 class ReportController extends ApiBaseController
 {
     protected $_supported = ['survey', 'meeting', 'goal', 'group'];
@@ -39,40 +39,40 @@ class ReportController extends ApiBaseController
     }
 
     /**
-    * Get the survey reports.
-    *
-    * @return \Illuminate\Http\Response
-    */
+     * Get the survey reports.
+     *
+     * @return \Illuminate\Http\Response
+     */
     protected function survey(ReportRequest $request)
     {
         return $this->getReport('survey', $request)->run();
     }
 
     /**
-    * Get the goal reports.
-    *
-    * @return \Illuminate\Http\Response
-    */
+     * Get the goal reports.
+     *
+     * @return \Illuminate\Http\Response
+     */
     protected function goal(ReportRequest $request)
     {
         return $this->getReport('goal', $request)->run();
     }
 
     /**
-    * Get the group reports.
-    *
-    * @return \Illuminate\Http\Response
-    */
+     * Get the group reports.
+     *
+     * @return \Illuminate\Http\Response
+     */
     protected function group(ReportRequest $request)
     {
         return $this->getReport('group', $request)->run();
     }
 
     /**
-    * Get the meeting reports.
-    *
-    * @return \Illuminate\Http\Response
-    */
+     * Get the meeting reports.
+     *
+     * @return \Illuminate\Http\Response
+     */
     protected function meeting(ReportRequest $request)
     {
         return $this->getReport('meeting', $request)->run();
@@ -84,7 +84,7 @@ class ReportController extends ApiBaseController
      * @param [type] $type
      * @return boolean
      */
-    protected function isSupported($type) : bool
+    protected function isSupported($type): bool
     {
         return in_array($type, $this->_supported);
     }
@@ -95,10 +95,10 @@ class ReportController extends ApiBaseController
      * @param string $type
      * @return object
      */
-    protected function getReport(string $type, ReportRequest $request) : object
+    protected function getReport(string $type, ReportRequest $request): object
     {
-        $type = title_case($type).'Report';
-        $reportClass = '\\App\\Reports\\'.$type;
+        $type = title_case($type) . 'Report';
+        $reportClass = '\\App\\Reports\\' . $type;
         return new Report(new $reportClass($request));
     }
 }

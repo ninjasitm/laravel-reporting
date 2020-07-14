@@ -18,7 +18,7 @@ class PublishCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Publish all of the Nitm Reporting resources';
+    protected $description = 'Publish all of the Reporting  resources';
 
     /**
      * Execute the console command.

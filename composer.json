@@ -3,15 +3,19 @@
     "description": "Reporting foundation for generating reports for laravel projects",
     "type": "package",
     "require": {
-        "jenssegers/mongodb-sentry": "^3.0.0",
         "prettus/l5-repository": "^2.6",
         "nesbot/carbon": "^2.21"
     },
+    "suggest": {
+        "jenssegers/mongodb-sentry": "^3.0.0"
+    },
     "license": "MIT",
-    "authors": [{
-        "name": "Malcolm Paul",
-        "email": "malcolm@ninjasitm.com"
-    }],
+    "authors": [
+        {
+            "name": "Malcolm Paul",
+            "email": "malcolm@ninjasitm.com"
+        }
+    ],
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {

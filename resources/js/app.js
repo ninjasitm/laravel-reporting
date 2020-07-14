@@ -18,15 +18,15 @@ Vue.use(VueRouter);
 
 window.Popper = require('popper.js').default;
 
-moment.tz.setDefault(Telescope.timezone);
+moment.tz.setDefault(Reporting .timezone);
 
-window.Telescope.basePath = '/' + window.Telescope.path;
+window.Reporting .basePath = '/' + window.Reporting .path;
 
-let routerBasePath = window.Telescope.basePath + '/';
+let routerBasePath = window.Reporting .basePath + '/';
 
-if (window.Telescope.path === '' || window.Telescope.path === '/') {
+if (window.Reporting .path === '' || window.Reporting .path === '/') {
     routerBasePath = '/';
-    window.Telescope.basePath = '';
+    window.Reporting .basePath = '';
 }
 
 const router = new VueRouter({
@@ -44,7 +44,7 @@ Vue.component('alert', require('./components/Alert.vue').default);
 Vue.mixin(Base);
 
 new Vue({
-    el: '#telescope',
+    el: '#nitm-reporting',
 
     router,
 
@@ -60,7 +60,7 @@ new Vue({
 
             autoLoadsNewEntries: localStorage.autoLoadsNewEntries === '1',
 
-            recording: Telescope.recording,
+            recording: Reporting .recording,
         };
     },
 
@@ -76,9 +76,9 @@ new Vue({
         },
 
         toggleRecording() {
-            axios.post(Telescope.basePath + '/telescope-api/toggle-recording');
+            axios.post(Reporting .basePath + '/nitm-reporting-api/toggle-recording');
 
-            window.Telescope.recording = !Telescope.recording;
+            window.Reporting .recording = !Reporting .recording;
             this.recording = !this.recording;
         },
     },

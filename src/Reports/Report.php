@@ -2,7 +2,7 @@
 
 namespace Nitm\Reporting\Reports;
 
-use App\Reports\Contracts\Report as ReportContract;
+use Nitm\Reporting\Reports\Contracts\Report as ReportContract;
 
 /**
  * Report class to generate reports

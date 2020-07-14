@@ -1,6 +1,6 @@
 <?php
 
-namespace Laravel\Telescope;
+namespace Nitm\Reporting;
 
 class EntryUpdate
 {

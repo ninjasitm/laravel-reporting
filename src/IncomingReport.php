@@ -1,10 +1,10 @@
 <?php
 
-namespace 
+namespace
 namespace Nitm\Reporting;
 
 use Illuminate\Support\Str;
-use Laravel\Telescope\Contracts\EntriesRepository;
+use Nitm\Reporting \Contracts\EntriesRepository;
 
 class IncomingEntry
 {
@@ -248,7 +248,7 @@ class IncomingEntry
 ;
 
 use Illuminate\Support\Str;
-use Laravel\Telescope\Contracts\EntriesRepository;
+use Nitm\Reporting \Contracts\EntriesRepository;
 
 class IncomingEntry
 {

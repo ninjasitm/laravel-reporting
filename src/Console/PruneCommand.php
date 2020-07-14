@@ -12,23 +12,23 @@ class PruneCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'telescope:prune {--hours=24 : The number of hours to retain Telescope data}';
+    protected $signature = 'nitm-reporting:prune {--hours=24 : The number of hours to retain Reporting  data}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Prune stale entries from the Telescope database';
+    protected $description = 'Prune stale entries from the Reporting  database';
 
     /**
      * Execute the console command.
      *
-     * @param  \Nitm\Reporting\Contracts\PrunableRepository  $repository
+     * @param  \Nitm\Reporting \Contracts\PrunableRepository  $repository
      * @return void
      */
     public function handle(PrunableRepository $repository)
     {
-        $this->info($repository->prune(now()->subHours($this->option('hours'))).' entries pruned.');
+        $this->info($repository->prune(now()->subHours($this->option('hours'))) . ' entries pruned.');
     }
 }

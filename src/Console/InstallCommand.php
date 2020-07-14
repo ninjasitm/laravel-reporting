@@ -2,27 +2,24 @@
 
 namespace Nitm\Reporting\Console;
 
-use Illuminate\Support\Str;
 use Illuminate\Console\Command;
-use Illuminate\Console\DetectsApplicationNamespace;
+use Illuminate\Support\Str;
 
 class InstallCommand extends Command
 {
-    use DetectsApplicationNamespace;
-
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'telescope:install';
+    protected $signature = 'nitm-reporting:install';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Install all of the Telescope resources';
+    protected $description = 'Install all of the Reporting resources';
 
     /**
      * Execute the console command.
@@ -31,32 +28,32 @@ class InstallCommand extends Command
      */
     public function handle()
     {
-        $this->comment('Publishing Telescope Service Provider...');
-        $this->callSilent('vendor:publish', ['--tag' => 'telescope-provider']);
+        $this->comment('Publishing Reporting Service Provider...');
+        $this->callSilent('vendor:publish', ['--tag' => 'nitm-reporting-provider']);
 
-        $this->comment('Publishing Telescope Assets...');
-        $this->callSilent('vendor:publish', ['--tag' => 'telescope-assets']);
+        $this->comment('Publishing Reporting Assets...');
+        $this->callSilent('vendor:publish', ['--tag' => 'nitm-reporting-assets']);
 
-        $this->comment('Publishing Telescope Configuration...');
-        $this->callSilent('vendor:publish', ['--tag' => 'telescope-config']);
+        $this->comment('Publishing Reporting Configuration...');
+        $this->callSilent('vendor:publish', ['--tag' => 'nitm-reporting-config']);
 
-        $this->registerTelescopeServiceProvider();
+        $this->registerReportingServiceProvider();
 
-        $this->info('Telescope scaffolding installed successfully.');
+        $this->info('Reporting scaffolding installed successfully.');
     }
 
     /**
-     * Register the Telescope service provider in the application configuration file.
+     * Register the Reporting service provider in the application configuration file.
      *
      * @return void
      */
-    protected function registerTelescopeServiceProvider()
+    protected function registerReportingServiceProvider()
     {
-        $namespace = Str::replaceLast('\\', '', $this->getAppNamespace());
+        $namespace = Str::replaceLast('\\', '', $this->laravel->getNamespace());
 
         $appConfig = file_get_contents(config_path('app.php'));
 
-        if (Str::contains($appConfig, $namespace . '\\Providers\\TelescopeServiceProvider::class')) {
+        if (Str::contains($appConfig, $namespace . '\\Providers\\ReportingServiceProvider::class')) {
             return;
         }
 
@@ -69,15 +66,15 @@ class InstallCommand extends Command
         $eol = array_keys($lineEndingCount, max($lineEndingCount))[0];
 
         file_put_contents(config_path('app.php'), str_replace(
-            "{$namespace}\\Providers\EventServiceProvider::class," . $eol,
-            "{$namespace}\\Providers\EventServiceProvider::class," . $eol . "        {$namespace}\Providers\TelescopeServiceProvider::class," . $eol,
+            "{$namespace}\\Providers\RouteServiceProvider::class," . $eol,
+            "{$namespace}\\Providers\RouteServiceProvider::class," . $eol . "        {$namespace}\Providers\ReportingServiceProvider::class," . $eol,
             $appConfig
         ));
 
-        file_put_contents(app_path('Providers/TelescopeServiceProvider.php'), str_replace(
+        file_put_contents(app_path('Providers/ReportingServiceProvider.php'), str_replace(
             "namespace App\Providers;",
             "namespace {$namespace}\Providers;",
-            file_get_contents(app_path('Providers/TelescopeServiceProvider.php'))
+            file_get_contents(app_path('Providers/ReportingServiceProvider.php'))
         ));
     }
 }

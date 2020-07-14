@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\API;
+namespace Nitm\Reporting\Http\Controllers\API;
 
 use Illuminate\Http\Request;
 use Response;
@@ -27,7 +27,7 @@ class ApiBaseController extends ApiController
      *
      * @return void
      */
-    public function __construct($withAuth=true)
+    public function __construct($withAuth = true)
     {
         parent::__construct();
         if ($withAuth) {
@@ -52,7 +52,7 @@ class ApiBaseController extends ApiController
         $this->repository->pushCriteria(new LimitOffsetCriteria($request));
         extract($this->resolveItems($request));
 
-        return $this->sendResponse($data, $dataType->display_name_plural.' retrieved successfully');
+        return $this->sendResponse($data, $dataType->display_name_plural . ' retrieved successfully');
     }
 
     /**
@@ -74,7 +74,7 @@ class ApiBaseController extends ApiController
         $models = $this->repository->create($input);
         $slug = $this->getSlug($request);
 
-        return $this->sendResponse($models->toArray(), $this->getDataType($slug)->display_name_singular.' saved successfully');
+        return $this->sendResponse($models->toArray(), $this->getDataType($slug)->display_name_singular . ' saved successfully');
     }
 
     /**
@@ -95,10 +95,10 @@ class ApiBaseController extends ApiController
         $this->authorizeAction($request, ['read', $model]);
 
         if (empty($model)) {
-            return $this->sendError($this->getDataType($slug)->display_name_singular.' not found');
+            return $this->sendError($this->getDataType($slug)->display_name_singular . ' not found');
         }
 
-        return $this->sendResponse($model->toArray(), $this->getDataType($slug)->display_name_singular.' retrieved successfully');
+        return $this->sendResponse($model->toArray(), $this->getDataType($slug)->display_name_singular . ' retrieved successfully');
     }
 
     /**
@@ -119,7 +119,7 @@ class ApiBaseController extends ApiController
         $slug = $this->getSlug($request);
 
         if (empty($model)) {
-            return $this->sendError($this->getDataType($slug)->display_name_singular.' not found');
+            return $this->sendError($this->getDataType($slug)->display_name_singular . ' not found');
         }
 
         // Check permission
@@ -127,7 +127,7 @@ class ApiBaseController extends ApiController
 
         $model = $this->repository->update(array_only($input, $model->getFillable()), $id);
 
-        return $this->sendResponse($model->toArray(), $this->getDataType($slug)->display_name_singular.' updated successfully');
+        return $this->sendResponse($model->toArray(), $this->getDataType($slug)->display_name_singular . ' updated successfully');
     }
 
     /**
@@ -145,7 +145,7 @@ class ApiBaseController extends ApiController
         $slug = $this->getSlug($request);
 
         if (empty($model)) {
-            return $this->sendError($this->getDataType()->display_name_singular.' not found');
+            return $this->sendError($this->getDataType()->display_name_singular . ' not found');
         }
 
         // Check permission
@@ -153,7 +153,7 @@ class ApiBaseController extends ApiController
 
         $model->delete();
 
-        return $this->sendResponse($id, $this->getDataType($slug)->display_name_singular.' deleted successfully');
+        return $this->sendResponse($id, $this->getDataType($slug)->display_name_singular . ' deleted successfully');
     }
 
     /**
@@ -184,8 +184,8 @@ class ApiBaseController extends ApiController
             switch ($action) {
                 case 'create':
                 case 'store':
-                return true;
-                break;
+                    return true;
+                    break;
             }
             if (is_iterable($model)) {
                 array_map(function ($m) {
@@ -211,12 +211,11 @@ class ApiBaseController extends ApiController
      * @param Closure $dataCallback
      * @return void
      */
-    protected function resolveItems($request, $builder = null, $callback=null, $dataCallback=null)
+    protected function resolveItems($request, $builder = null, $callback = null, $dataCallback = null)
     {
         $builder = $builder ?: $this->repository;
-        $slug = $this->getSlug($request);
-        ;
-        $options = (array)$request->input('options');
+        $slug = $this->getSlug($request);;
+        $options = (array) $request->input('options');
         $defaultOptions = ['form', 'filter', 'items'];
         if (in_array('all', $options) || empty($options)) {
             $options = $defaultOptions;

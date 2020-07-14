@@ -11,7 +11,7 @@ class EntryModel extends Model
      *
      * @var string
      */
-    protected $table = 'telescope_entries';
+    protected $table = 'nitm-reporting_entries';
 
     /**
      * The name of the "updated at" column.
@@ -58,14 +58,14 @@ class EntryModel extends Model
      * @param  \Nitm\Reporting\Storage\EntryQueryOptions  $options
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWithTelescopeOptions($query, $type, EntryQueryOptions $options)
+    public function scopeWithReporting Options($query, $type, EntryQueryOptions $options)
     {
         $this->whereType($query, $type)
-                ->whereBatchId($query, $options)
-                ->whereTag($query, $options)
-                ->whereFamilyHash($query, $options)
-                ->whereBeforeSequence($query, $options)
-                ->filter($query, $options);
+            ->whereBatchId($query, $options)
+            ->whereTag($query, $options)
+            ->whereFamilyHash($query, $options)
+            ->whereBeforeSequence($query, $options)
+            ->filter($query, $options);
 
         return $query;
     }
@@ -113,7 +113,7 @@ class EntryModel extends Model
     {
         $query->when($options->tag, function ($query, $tag) {
             return $query->whereIn('uuid', function ($query) use ($tag) {
-                $query->select('entry_uuid')->from('telescope_entries_tags')->whereTag($tag);
+                $query->select('entry_uuid')->from('nitm-reporting_entries_tags')->whereTag($tag);
             });
         });
 
@@ -177,6 +177,6 @@ class EntryModel extends Model
      */
     public function getConnectionName()
     {
-        return config('telescope.storage.database.connection');
+        return config('nitm-reporting.storage.database.connection');
     }
 }

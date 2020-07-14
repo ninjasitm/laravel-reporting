@@ -1,5 +1,6 @@
 <?php
-namespace App\Traits;
+
+namespace Nitm\Reporting\Traits;
 
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
@@ -19,24 +20,24 @@ trait HasReports
      * @param string $column The date column we're using
      * @return void
      */
-    public function scopeRange($query, $range = null, $prefix = null, $column = 'created_at')
+    public function scopeReportRange($query, $range = null, $prefix = null, $column = 'created_at')
     {
         $prefix = $prefix ?: $query->getModel()->getTable();
         $query->where(function ($query) use ($range, $prefix, $column) {
-            $column = ($prefix ? $prefix.'.' : '').$column;
+            $column = ($prefix ? $prefix . '.' : '') . $column;
             if (!empty($range)) {
                 if (is_array($range) && !Arr::isAssoc($range)) {
                     $query->whereBetween(
-                    $column,
-                    array_values(
-                        array_map(
-                            function ($dt) {
-                                return $dt->toDateTimeString();
-                            },
-                            $range
+                        $column,
+                        array_values(
+                            array_map(
+                                function ($dt) {
+                                    return $dt->toDateTimeString();
+                                },
+                                $range
+                            )
                         )
-                    )
-                );
+                    );
                 } elseif (is_array($range) && Arr::isAssoc($range)) {
                     if ($start = array_get($range, 'start')) {
                         $query->where($column, '>', $start->toDateTimeString());

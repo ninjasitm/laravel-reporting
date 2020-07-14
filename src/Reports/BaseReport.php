@@ -4,7 +4,7 @@ namespace Nitm\Reporting\Reports;
 
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
-use App\Http\Requests\ReportRequest;
+use Nitm\Reporting\Http\Requests\ReportRequest;
 
 /**
  * Base report that defines some basic functionality
@@ -63,7 +63,7 @@ abstract class BaseReport
      */
     public function createCollection($data)
     {
-        $class = '\\App\\Http\\Resources\\Reports\\' . class_basename($this) . "Collection";
+        $class = '\\Nitm\Reporting\\Http\\Resources\\Reports\\' . class_basename($this) . "Collection";
         return new $class($data);
     }
 
@@ -128,7 +128,7 @@ abstract class BaseReport
     {
         $query->where(function ($query) use ($range, $prefix, $column) {
             $range = $range ?: $this->getRange();
-            $column = ($prefix ? $prefix . '.' : '') . $column;
+            $column = ($prefix ? $prefix : $query->getModel()->getTable()) . '.' . $column;
             if (!empty($range) && count($range) == 2) {
                 $query->whereBetween(
                     $column,

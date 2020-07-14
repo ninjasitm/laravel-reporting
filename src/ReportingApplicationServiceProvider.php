@@ -5,7 +5,7 @@ namespace Nitm\Reporting;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
-class NitmReportingApplicationServiceProvider extends ServiceProvider
+class ReportingApplicationServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap any application services.
@@ -28,7 +28,7 @@ class NitmReportingApplicationServiceProvider extends ServiceProvider
 
         NitmReporting::auth(function ($request) {
             return app()->environment('local') ||
-                   Gate::check('viewNitmReporting', [$request->user()]);
+                Gate::check('viewNitmReporting', [$request->user()]);
         });
     }
 
