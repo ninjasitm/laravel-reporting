@@ -30,7 +30,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Nitm\\Reporting\\NitmReportingServiceProvider"
+                "Nitm\\Reporting\\ReportingServiceProvider"
             ]
         }
     },
