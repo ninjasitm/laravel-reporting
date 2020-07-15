@@ -18,7 +18,7 @@ class ReportingApplicationServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configure the NitmReporting authorization services.
+     * Configure the Reporting authorization services.
      *
      * @return void
      */
@@ -26,22 +26,22 @@ class ReportingApplicationServiceProvider extends ServiceProvider
     {
         $this->gate();
 
-        NitmReporting::auth(function ($request) {
+        Reporting::auth(function ($request) {
             return app()->environment('local') ||
-                Gate::check('viewNitmReporting', [$request->user()]);
+                Gate::check('viewReporting', [$request->user()]);
         });
     }
 
     /**
-     * Register the NitmReporting gate.
+     * Register the Reporting gate.
      *
-     * This gate determines who can access NitmReporting in non-local environments.
+     * This gate determines who can access Reporting in non-local environments.
      *
      * @return void
      */
     protected function gate()
     {
-        Gate::define('viewNitmReporting', function ($user) {
+        Gate::define('viewReporting', function ($user) {
             return in_array($user->email, [
                 //
             ]);
