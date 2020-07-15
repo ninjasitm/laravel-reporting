@@ -89,7 +89,7 @@ class DatabaseEntriesRepository implements Contract, ClearableRepository, Prunab
     public function get($type, EntryQueryOptions $options)
     {
         return EntryModel::on($this->connection)
-            ->withReporting Options($type, $options)
+            ->withReportingOptions($type, $options)
             ->take($options->limit)
             ->orderByDesc('sequence')
             ->get()->reject(function ($entry) {

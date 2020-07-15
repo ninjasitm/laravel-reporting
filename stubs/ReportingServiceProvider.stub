@@ -2,11 +2,11 @@
 
 namespace App\Providers;
 
-use Nitm\Reporting\NitmReporting;
+use Nitm\Reporting\Reporting;
 use Illuminate\Support\Facades\Gate;
-use Nitm\Reporting\NitmReportingApplicationServiceProvider;
+use Nitm\Reporting\ReportingApplicationServiceProvider;
 
-class NitmReportingServiceProvider extends NitmReportingApplicationServiceProvider
+class ReportingServiceProvider extends ReportingApplicationServiceProvider
 {
     /**
      * Register any application services.
@@ -15,9 +15,9 @@ class NitmReportingServiceProvider extends NitmReportingApplicationServiceProvid
      */
     public function register()
     {
-        // NitmReporting::night();
+        // Reporting::night();
 
-        NitmReporting::filter(function () {
+        Reporting::filter(function () {
             if ($this->app->isLocal()) {
                 return true;
             }
@@ -35,7 +35,7 @@ class NitmReportingServiceProvider extends NitmReportingApplicationServiceProvid
      */
     protected function gate()
     {
-        Gate::define('viewNitmReporting', function ($user) {
+        Gate::define('viewReporting', function ($user) {
             return in_array($user->email, [
                 //
             ]);

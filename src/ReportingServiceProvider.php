@@ -25,7 +25,7 @@ class ReportingServiceProvider extends ServiceProvider
         $this->registerPublishing();
 
         // Reporting::start($this->app);
-        Reporting::listenForStorageOpportunities($this->app);
+        // Reporting::listenForStorageOpportunities($this->app);
 
         $this->loadViewsFrom(
             __DIR__ . '/../resources/views',
@@ -40,12 +40,12 @@ class ReportingServiceProvider extends ServiceProvider
      */
     private function registerRoutes()
     {
-        Route::group($this->routeConfiguration(), function () {
-            $this->loadRoutesFrom(__DIR__ . '/Http/routes.php');
-        });
-        Route::group($this->apiRouteConfiguration(), function () {
-            $this->loadRoutesFrom(__DIR__ . '/Http/api-routes.php');
-        });
+        // Route::group($this->routeConfiguration(), function () {
+        //     $this->loadRoutesFrom(__DIR__ . '/Http/routes.php');
+        // });
+        // Route::group($this->apiRouteConfiguration(), function () {
+        //     $this->loadRoutesFrom(__DIR__ . '/Http/api-routes.php');
+        // });
     }
 
     /**
