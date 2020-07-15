@@ -17,7 +17,7 @@ use RuntimeException;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
 use Throwable;
 
-class Report
+class Reporting
 {
     use AuthorizesRequests,
         ListensForStorageOpportunities;

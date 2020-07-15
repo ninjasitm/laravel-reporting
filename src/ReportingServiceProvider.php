@@ -18,18 +18,19 @@ class ReportingServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // Route::middlewareGroup('nitm-reporting', config('nitm-reporting.middleware', []));
+        Route::middlewareGroup('nitm-reporting', config('nitm-reporting.middleware', []));
 
-        // $this->registerRoutes();
-        // $this->registerMigrations();
-        // $this->registerPublishing();
+        $this->registerRoutes();
+        $this->registerMigrations();
+        $this->registerPublishing();
 
-        // NitmReporting::start($this->app);
-        // NitmReporting::listenForStorageOpportunities($this->app);
+        // Reporting::start($this->app);
+        Reporting::listenForStorageOpportunities($this->app);
 
-        // $this->loadViewsFrom(
-        //     __DIR__.'/../resources/views', 'nitm-reporting'
-        // );
+        $this->loadViewsFrom(
+            __DIR__ . '/../resources/views',
+            'nitm-reporting'
+        );
     }
 
     /**
@@ -105,7 +106,7 @@ class ReportingServiceProvider extends ServiceProvider
             ], 'nitm-reporting-config');
 
             $this->publishes([
-                __DIR__ . '/../stubs/NitmReportingServiceProvider.stub' => app_path('Providers/NitmReportingServiceProvider.php'),
+                __DIR__ . '/../stubs/ReportingServiceProvider.stub' => app_path('Providers/ReportingServiceProvider.php'),
                 __DIR__ . '/../stubs/ReportingController.stub' => app_path('Http/Controllers/Api/ReportingController.php'),
             ], 'nitm-reporting-provider');
         }
@@ -184,6 +185,6 @@ class ReportingServiceProvider extends ServiceProvider
      */
     protected function shouldMigrate()
     {
-        return NitmReporting::$runsMigrations && config('nitm-reporting.driver') === 'database';
+        return Reporting::$runsMigrations && config('nitm-reporting.driver') === 'database';
     }
 }
