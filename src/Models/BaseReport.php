@@ -1,6 +1,6 @@
 <?php
 
-namespace Nitm\Reporting\Reports;
+namespace Nitm\Reporting\Models;
 
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
