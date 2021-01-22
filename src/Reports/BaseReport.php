@@ -28,11 +28,11 @@ abstract class BaseReport
      *
      * @return object
      */
-    public function getData(): object
+    public function getData($query = null): object
     {
         $reportType = $this->request->input('type');
         $period = $this->getRange();
-        $query = $this->getQuery($period);
+        $query = $query ?? $this->getQuery($period);
         $collection = $this->createCollection($query->paginate());
         $response = $collection->toResponse($this->request)->getData();
         $data = $response->data;
@@ -58,13 +58,24 @@ abstract class BaseReport
     /**
      * Create a resource collection
      *
-     * @param array $data
+     * @param  array $data
+     * @return void
+     */
+    public function createResourceCollection($data)
+    {
+        $class = '\\App\\Http\\Resources\\Reports\\' . class_basename($this) . "Collection";
+        return new $class($data);
+    }
+
+    /**
+     * Create a resource collection
+     *
+     * @param  array $data
      * @return void
      */
     public function createCollection($data)
     {
-        $class = '\\Nitm\Reporting\\Http\\Resources\\Reports\\' . class_basename($this) . "Collection";
-        return new $class($data);
+        return collect($data);
     }
 
     /**
@@ -109,55 +120,57 @@ abstract class BaseReport
             $end = null;
         }
 
-        return array_filter([
+        return [
             'start' => $start ? new Carbon($start) : Carbon::now()->subMonth(1),
             'end' => $end ? new Carbon($end) : Carbon::now()
-        ]);
+        ];
     }
 
     /**
      * Set the time range on a querey
      *
-     * @param Builder $query
-     * @param mixed $range
-     * @param string $prefix Most likely the table name
-     * @param string $column THe date column
+     * @param  Builder $query
+     * @param  mixed   $range
+     * @param  string  $prefix Most likely the table name
+     * @param  string  $column THe date column
      * @return void
      */
     public function setRange($query, $range = null, string $prefix = null, $column = 'created_at')
     {
-        $query->where(function ($query) use ($range, $prefix, $column) {
-            $range = $range ?: $this->getRange();
-            $column = ($prefix ? $prefix : $query->getModel()->getTable()) . '.' . $column;
-            if (!empty($range) && count($range) == 2) {
-                $query->whereBetween(
-                    $column,
-                    array_values(
-                        array_map(
-                            function ($dt) {
-                                return $dt->toDateTimeString();
-                            },
-                            $range
+        $query->where(
+            function ($query) use ($range, $prefix, $column) {
+                $range = $range ?: $this->getRange();
+                $column = ($prefix ? $prefix : $query->getModel()->getTable()) . '.' . $column;
+                if (!empty($range) && count($range) == 2) {
+                    $query->whereBetween(
+                        $column,
+                        array_values(
+                            array_map(
+                                function ($dt) {
+                                    return $dt->toDateTimeString();
+                                },
+                                $range
+                            )
                         )
-                    )
-                );
-            } else {
-                if ($start = array_get($range, 'start')) {
-                    $query->where($column, '>', $start->toDateTimeString());
-                } elseif ($end = array_get($range, 'end')) {
-                    $query->where($column, '<', $end->toDateTimeString());
+                    );
+                } else {
+                    if ($start = array_get($range, 'start')) {
+                        $query->where($column, '>', $start->toDateTimeString());
+                    } elseif ($end = array_get($range, 'end')) {
+                        $query->where($column, '<', $end->toDateTimeString());
+                    }
                 }
             }
-        });
+        );
     }
 
     /**
      * Group the data by a time series on a querey
      *
-     * @param Builder $query
-     * @param mixed $interval [int, month|day|week|year]
-     * @param string $prefix Most likely the table name
-     * @param string $column THe date column
+     * @param  Builder $query
+     * @param  mixed   $interval [int, month|day|week|year]
+     * @param  string  $prefix   Most likely the table name
+     * @param  string  $column   THe date column
      * @return void
      */
 
@@ -168,7 +181,7 @@ abstract class BaseReport
     /**
      * Extend the report summary information
      *
-     * @param mixed $data
+     * @param  mixed $data
      * @return void
      */
     protected function extendSummary($data)
@@ -196,11 +209,11 @@ abstract class BaseReport
     /**
      * Format pie chart dtaa in a standard format
      *
-     * @param string $type The chart type
-     * @param mixed $title
-     * @param array $data
-     * @param array $labels
-     * @param array $options
+     * @param  string $type    The chart type
+     * @param  mixed  $title
+     * @param  array  $data
+     * @param  array  $labels
+     * @param  array  $options
      * @return array
      */
     protected function formatChartData(string $type, $title, $data, $labels, $options = []): array
@@ -209,19 +222,17 @@ abstract class BaseReport
         // Remove the type parameter
         array_shift($args);
         switch ($type) {
-            case 'pie':
-            case 'donut':
-                return $this->formatPieChartData($title, $data, $labels, $options, $type);
+        case 'pie':
+        case 'donut':
+            return $this->formatPieChartData($title, $data, $labels, $options, $type);
                 break;
 
-            case 'bar':
-            case 'column':
-            case 'horizontal-bar':
-                return $this->formatBarChartData($title, $data, $labels, $options, $type);
+        case 'line':
+            return $this->formatLineChartData($title, $data, $labels, $options, $type);
                 break;
 
-            case 'line':
-                return $this->formatLineChartData($title, $data, $labels, $options, $type);
+        default:
+            return $this->formatBarChartData($title, $data, $labels, $options, $type);
                 break;
         }
     }
@@ -229,11 +240,11 @@ abstract class BaseReport
     /**
      * Format pie chart dtaa in a standard format
      *
-     * @param mixed $title
-     * @param array $data
-     * @param array $labels
-     * @param array $options
-     * @param  string $type The chart type [pie|donut]
+     * @param  mixed  $title
+     * @param  array  $data
+     * @param  array  $labels
+     * @param  array  $options
+     * @param  string $type    The chart type [pie|donut]
      * @return array
      */
     protected function formatPieChartData($title, $data, $labels, $options = [], $type = 'pie'): array
@@ -272,11 +283,11 @@ abstract class BaseReport
     /**
      * Format bar chart data in a standard format
      *
-     * @param mixed $title
-     * @param array $data
-     * @param array $labels
-     * @param array $options
-     * @param string $alignment The chart alignment [vertical|horizontal]
+     * @param  mixed  $title
+     * @param  array  $data
+     * @param  array  $labels
+     * @param  array  $options
+     * @param  string $alignment The chart alignment [vertical|horizontal]
      * @return array
      */
     protected function formatBarChartData($title, $data, $labels, $options = [], $alignment = 'vertical'): array
@@ -287,7 +298,8 @@ abstract class BaseReport
             'series' => $this->prepareSeriesData($data),
             'labels' => $labels,
             'type' => 'bar',
-            'options' => array_merge([
+            'options' => array_merge(
+                [
                 'xaxis' => [
                     'categories' => $labels
                 ],
@@ -302,18 +314,19 @@ abstract class BaseReport
                         '
                     ]
                 ]
-            ], $options)
+                ], $options
+            )
         ];
     }
 
     /**
      * Format bar chart data in a standard format
      *
-     * @param mixed $title
-     * @param array $data
-     * @param array $labels
-     * @param array $options
-     * @param string $alignment The chart alignment [vertical|horizontal]
+     * @param  mixed  $title
+     * @param  array  $data
+     * @param  array  $labels
+     * @param  array  $options
+     * @param  string $alignment The chart alignment [vertical|horizontal]
      * @return array
      */
     protected function formatLineChartData($title, $data, $labels, $options = [], $alignment = 'vertical'): array
@@ -347,7 +360,7 @@ abstract class BaseReport
     /**
      * Return a properly wrapped series data
      *
-     * @param array $data
+     * @param  array $data
      * @return void
      */
     protected function prepareSeriesData(array $data): array
