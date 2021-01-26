@@ -162,6 +162,8 @@ abstract class BaseReport
                 }
             }
         );
+
+        return $query;
     }
 
     /**
