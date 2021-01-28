@@ -140,7 +140,8 @@ abstract class BaseReport
         $query->where(
             function ($query) use ($range, $prefix, $column) {
                 $range = $range ?: $this->getRange();
-                $column = ($prefix ? $prefix : $query->getModel()->getTable()) . '.' . $column;
+                $table = $query instanceof \Illuminate\Database\Eloquent\Builder ? $query->getModel()->getTable() : $query->from;
+                $column = ($prefix ? $prefix : $table) . '.' . $column;
                 if (!empty($range) && count($range) == 2) {
                     $query->whereBetween(
                         $column,
